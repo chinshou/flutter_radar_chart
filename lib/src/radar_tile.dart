@@ -1,6 +1,7 @@
 import 'dart:math' show sin, cos, pi;
 import 'package:flutter/material.dart';
 import 'package:radar_chart/src/radar_chart.dart';
+import 'package:path_drawing/path_drawing.dart';
 
 /// {@template radar_tile}
 /// [RadarTile] paints a polygon with optional edges, background or
@@ -13,6 +14,7 @@ class RadarTile extends StatelessWidget {
     double? borderStroke,
     this.borderColor,
     this.backgroundColor,
+    this.backgroundShader,
     this.values,
     double? radialStroke,
     this.radialColor,
@@ -20,6 +22,7 @@ class RadarTile extends StatelessWidget {
   })  : borderStroke = borderStroke ?? 0.0,
         radialStroke = radialStroke ?? 0.0,
         assert(values == null || values.length > 2),
+        assert(backgroundColor==null || backgroundShader==null),
         assert(vertices == null || vertices.length > 2),
         super(key: key);
 
@@ -35,6 +38,8 @@ class RadarTile extends StatelessWidget {
   /// Radar chart Background color
   /// White by default
   final Color? backgroundColor;
+
+  final Shader? backgroundShader;
 
   /// A list of values between 0.0 (zero) and 1.0 (one)
   final List<double>? values;
@@ -78,6 +83,7 @@ class RadarTile extends StatelessWidget {
       painter: _RadarTilePainter(
         points: points,
         backgroundColor: backgroundColor,
+        backgroundShader: backgroundShader,
         border: _LineData.tryOrNull(borderColor, borderStroke),
         radial: _LineData.tryOrNull(radialColor, radialStroke),
       ),
@@ -108,12 +114,14 @@ class _RadarTilePainter extends CustomPainter {
   const _RadarTilePainter({
     required this.points,
     this.backgroundColor,
+    this.backgroundShader,
     this.border,
     this.radial,
   });
 
   final List<Offset> points;
   final Color? backgroundColor;
+  final Shader? backgroundShader;
   final _LineData? border;
   final _LineData? radial;
 
@@ -126,11 +134,20 @@ class _RadarTilePainter extends CustomPainter {
   }
 
   void paintBg(Canvas canvas, Size size, Path path) {
-    if (backgroundColor == null) return;
-    final paint = Paint()
-      ..color = backgroundColor!
-      ..strokeCap = StrokeCap.round;
-    canvas.drawPath(path, paint);
+    //if (backgroundColor == null) return;
+    if (backgroundColor!=null) {
+      final paint = Paint()
+        ..color = backgroundColor!
+        ..strokeCap = StrokeCap.round;
+      canvas.drawPath(path, paint);
+    }
+    else{
+      final paint = Paint()
+        ..shader = backgroundShader!
+        ..strokeCap = StrokeCap.round;
+      canvas.drawPath(path, paint);
+    }
+
   }
 
   void paintRadial(Canvas canvas, Size size) {
@@ -154,7 +171,13 @@ class _RadarTilePainter extends CustomPainter {
       ..strokeWidth = border!.stroke
       ..style = PaintingStyle.stroke
       ..strokeCap = StrokeCap.round;
-    canvas.drawPath(path, paint);
+
+    canvas.drawPath(
+        dashPath(path, dashArray: CircularIntervalList<double>(
+          <double>[5.0, 5],
+        ),
+        ),
+        paint);
   }
 
   @override

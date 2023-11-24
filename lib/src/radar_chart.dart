@@ -35,6 +35,7 @@ class RadarChart extends InheritedWidget with RadarData {
     required this.length,
     this.initialAngle = 0,
     this.backgroundColor,
+    this.backgroundShader,
     this.borderStroke = 4.0,
     this.borderColor,
     this.radialStroke,
@@ -48,6 +49,7 @@ class RadarChart extends InheritedWidget with RadarData {
           child: Stack(children: [
             RadarTile(
               backgroundColor: backgroundColor,
+              backgroundShader: backgroundShader,
               borderStroke: borderStroke,
               borderColor: borderColor,
               radialStroke: radialStroke,
@@ -85,6 +87,8 @@ class RadarChart extends InheritedWidget with RadarData {
   /// Radar chart Background color
   /// White by default
   final Color? backgroundColor;
+
+  final Shader? backgroundShader;
 
   /// Strokewidth of lines from the center of the circumscribed circumference
   /// To work, it is necessary to set [radialColor]
